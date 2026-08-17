@@ -446,6 +446,11 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--bg-2);padding:.1
 .sitefoot a{color:var(--ink-2);text-decoration:none}
 .sitefoot a:hover{color:#446F2D}
 .sitefoot .legal{margin-top:1.6rem;font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sitefoot .fdesc{max-width:52ch;margin-top:.6rem;color:var(--ink-2);font-size:.9rem;line-height:1.6}
+.legalbar{display:flex;flex-wrap:wrap;gap:.6rem 1.6rem;justify-content:space-between;align-items:center;border-top:1px solid var(--rule);margin-top:1.8rem;padding-top:1rem;font-family:var(--f-mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.legalbar a{color:var(--muted);text-decoration:none}
+.legalbar a:hover{color:#446F2D}
+.legallinks{display:flex;gap:1.1rem;flex-wrap:wrap}
 
 @media (prefers-reduced-motion:reduce){
   *{transition-duration:.01ms!important;animation:none!important}
@@ -772,12 +777,21 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--bg-2);padding:.1
   <footer class="sitefoot">
     <div class="wrap">
       <div class="fw">BIO<b>SEB</b><span style="font-family:var(--f-mono);font-weight:400;font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-left:.6rem">Organics</span></div>
+      <p class="fdesc">Bioinsumos a base de microorganismos, análisis de laboratorio y fabricación para una agricultura más productiva y responsable, desde Ambato para todo el Ecuador.</p>
       <div class="cols">
         <div>Bioseborganics Cia. Ltda.<br>Av. Indoamérica Km 6, Ambato — Ecuador</div>
         <div><a href="mailto:info@bioseb.org">info@bioseb.org</a><br><a target="_blank" rel="noopener" href="https://wa.me/593991038589?text=Hola%2C%20quisiera%20conocer%20m%C3%A1s%20sobre%20las%20soluciones%20y%20servicios%20de%20BIOSEB.%20Vengo%20del%20sitio%20web.">WhatsApp +593 99 103 8589</a></div>
         <div>Registro Agrocalidad · Ecuador<br>Certificación orgánica Kiwa BCS Öko-Garantie</div>
       </div>
-      <div class="legal">© 2026 BIOSEB Organics — Todos los derechos reservados.</div>
+      <div class="legalbar">
+        <span>© <span id="fyear">2026</span> BIOSEB Organics — Todos los derechos reservados.</span>
+        <nav class="legallinks" aria-label="Legal">
+          <a href="#">Términos y condiciones</a>
+          <a href="#">Política de privacidad</a>
+          <a href="#">Política de cookies</a>
+        </nav>
+        <span>Developed by <a href="https://www.alphacrewstudio.com" target="_blank" rel="noopener">Alphacrew Studio</a></span>
+      </div>
     </div>
   </footer>
 </main>
@@ -995,6 +1009,10 @@ if(cform) cform.addEventListener('submit',function(e){
   var body='Nombre: '+v('f-nombre')+'\nEmpresa o finca: '+v('f-finca')+'\nCorreo: '+v('f-correo')+'\nTel\u00e9fono: '+v('f-tel')+'\nCultivo o producto de inter\u00e9s: '+v('f-cultivo')+'\n\n'+v('f-msg');
   location.href='mailto:info@bioseb.org?subject='+encodeURIComponent('Consulta desde el sitio web')+'&body='+encodeURIComponent(body);
 });
+
+/* dynamic year in the footer */
+var fy=document.getElementById('fyear');
+if(fy) fy.textContent=String(new Date().getFullYear());
 
 /* ==================== reveal + counters ==================== */
 var io=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{threshold:.12});
