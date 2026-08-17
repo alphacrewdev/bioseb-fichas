@@ -154,9 +154,8 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block;z-index
 }
 body.nogl canvas#gl{display:none}
 body.nogl #glwrap{background:
-  radial-gradient(circle at 50% 52%,rgba(182,190,178,.15),rgba(182,190,178,.05) 34%,transparent 43%),
-  linear-gradient(180deg,#0A0C07,#141A0E 45%,#0A0C07),
-  radial-gradient(60% 50% at 30% 50%,rgba(164,211,62,.07),transparent 70%);}
+  linear-gradient(180deg,#0A0C07 0%,#10150C 34%,#20160C 44%,#191108 72%,#0A0C07 100%),
+  radial-gradient(60% 40% at 40% 55%,rgba(164,211,62,.06),transparent 70%);}
 
 #layer{position:absolute;inset:0;z-index:5;pointer-events:none;padding-top:var(--navh)}
 .pane{
@@ -416,7 +415,7 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--bg-2);padding:.1
 
     <div id="layer">
       <div class="pane on" data-p="0">
-        <span class="kick"><i></i> Cultivo vivo · caja de Petri en tiempo real</span>
+        <span class="kick"><i></i> El suelo de tu cultivo · en tiempo real</span>
         <h1>Bioinsumos para el control de<span class="a">plagas y enfermedades.</span></h1>
         <p>Fabricamos en Ecuador productos a base de microorganismos que protegen tu cultivo y mejoran tu suelo, sin dañar el ambiente. Más de 15 años junto al agro exportador.</p>
         <div class="ctas">
@@ -426,28 +425,28 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--bg-2);padding:.1
       </div>
 
       <div class="pane r" data-p="1">
-        <span class="kick"><i></i> 01 — La espora</span>
-        <h2>Una espora puede esperar meses.</h2>
-        <p><em style="font-style:italic;color:var(--accent)">Trichoderma harzianum</em> permanece latente en el suelo, intacto, hasta que detecta una sola señal: humedad.</p>
+        <span class="kick"><i></i> 01 — El problema</span>
+        <h2>¿Plagas? ¿Hongos? ¿Suelo cansado?</h2>
+        <p>Cada ciclo, tu cultivo pelea contra insectos, enfermedades y un suelo cada vez más pobre.</p>
       </div>
 
       <div class="pane" data-p="2">
-        <span class="kick"><i></i> 02 — La competencia</span>
-        <h2>El suelo es un ecosistema en disputa.</h2>
-        <p>Bacterias, levaduras y hongos compiten por cada milímetro — en la placa, cada especie con su color. Un suelo sano gana esa competencia con biología, no con química.</p>
+        <span class="kick"><i></i> 02 — El químico</span>
+        <h2>El químico controla hoy, pero cansa el suelo.</h2>
+        <p>Con los años, el suelo pierde la vida microbiana que alimenta y defiende a la planta.</p>
       </div>
 
       <div class="pane r" data-p="3">
-        <span class="kick"><i></i> 03 — El antagonismo</span>
-        <h2>Cuando encuentra un patógeno, lo enrolla.</h2>
-        <p>Se adhiere, gira alrededor del invasor y segrega enzimas que disuelven su pared celular. Se llama micoparasitismo — y es la razón por la que este producto existe.</p>
+        <span class="kick"><i></i> 03 — La solución</span>
+        <h2>Nosotros le devolvemos esa vida al suelo.</h2>
+        <p>Microorganismos que controlan plagas y enfermedades y nutren a la planta desde la raíz.</p>
       </div>
 
       <div class="pane" data-p="4">
-        <span class="kick"><i></i> 04 — La raíz</span>
-        <h2>La planta nunca supo que estuvo en peligro.</h2>
-        <p>Raíz protegida, nutrientes movilizados, patógeno eliminado — sin un solo gramo de fungicida de síntesis. Esto es <strong style="color:var(--ink)">TRICOMIX</strong>.</p>
-        <div class="ctas"><a class="btn" href="#finder">Ver ficha técnica</a></div>
+        <span class="kick"><i></i> 04 — El resultado</span>
+        <h2>Plantas más fuertes que se defienden solas.</h2>
+        <p>Menos enfermedad, mejor raíz, mejor cosecha. Esto es <strong style="color:var(--ink)">Bioseb</strong>.</p>
+        <div class="ctas"><a class="btn" href="#finder">Ver productos</a></div>
       </div>
     </div>
 
@@ -788,251 +787,219 @@ if(!hasGL) document.body.classList.add('nogl');
 
 var VERT='#version 300 es\nin vec2 aPos;void main(){gl_Position=vec4(aPos,0.,1.);}';
 /* ============================================================
-   LA CAJA DE PETRI — a live Trichoderma culture on a backlit agar
-   plate, photographed dark-field the way ag labs actually shoot them.
-   Scroll story: inoculation → colony spreads in concentric rings with
-   a white hyphal margin → it overruns the rust pathogen colonies
-   (inhibition halos at the contact front) → a seedling germinates in
-   the plate, root wrapped in a protective green sheath.
-   All 2D SDF + value noise — far cheaper than the old raymarcher.
+   EL CORTE DE SUELO — a soil cross-section that narrates the copy:
+   ch1 pests + tired soil, ch2 chemical spray kills pests but grays
+   the soil out, ch3 bio drops bring microbial life + mycelium back,
+   ch4 the root doubles and a pest is repelled at the green halo.
+   All 2D SDF + value noise, scroll-driven via uP.
    ============================================================ */
 var FRAG=`#version 300 es
 precision highp float;
 out vec4 fragColor;
 uniform vec2 uRes; uniform float uTime, uP, uAudio; uniform vec2 uMouse; uniform int uSteps;
 
-const vec3 BG    =vec3(0.028,0.034,0.020);
-const vec3 AGAR_L=vec3(0.500,0.520,0.470);
-const vec3 AGAR_D=vec3(0.270,0.290,0.265);
-const vec3 MWHITE=vec3(0.930,0.945,0.870);
-const vec3 GRN_D =vec3(0.266,0.435,0.176);  /* #446F2D */
-const vec3 GRN_L =vec3(0.518,0.690,0.149);  /* #84B026 */
-const vec3 ROOTC =vec3(0.880,0.855,0.740);
+const vec3 GRN_D=vec3(0.266,0.435,0.176);
+const vec3 GRN_L=vec3(0.518,0.690,0.149);
+const vec3 ROOTC=vec3(0.880,0.855,0.740);
+const vec3 RUST =vec3(0.700,0.330,0.180);
 
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float vn2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
  return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}
 float fbm2(vec2 p){float a=0.5,s=0.0;for(int i=0;i<4;i++){s+=a*vn2(p);p*=2.03;a*=0.5;}return s;}
-
-/* direction-dependent colony radius — periodic in angle so the lobed
-   margin never seams at ±pi */
-float colonyEdge(float g, vec2 q){
- float th=atan(q.y,q.x+1e-5);
- return g*(0.83+0.17*fbm2(vec2(cos(th),sin(th))*1.9+4.2));
-}
-/* distance to a segment grown to fraction f of its length */
 float dseg(vec2 p, vec2 a, vec2 b, float f){
  vec2 e2=mix(a,b,clamp(f,0.0,1.0));
  vec2 ab=e2-a;
  float h=clamp(dot(p-a,ab)/max(dot(ab,ab),1e-6),0.0,1.0);
  return length(p-a-ab*h);
 }
-/* species colour — ivories and creams common; yellow, orange, salmon,
-   rust, sage and near-black progressively rarer, like a real mixed plate */
-vec3 colonyColor(float h){
- if(h<0.24) return vec3(0.800,0.780,0.700);
- if(h<0.42) return vec3(0.730,0.670,0.520);
- if(h<0.56) return vec3(0.740,0.630,0.220);
- if(h<0.68) return vec3(0.760,0.430,0.160);
- if(h<0.78) return vec3(0.780,0.500,0.430);
- if(h<0.86) return vec3(0.460,0.310,0.160);
- if(h<0.94) return vec3(0.430,0.500,0.340);
- return vec3(0.200,0.170,0.120);
-}
-/* one size-class of colonies on a jittered grid, appearing one after another.
-   3x3 neighbourhood scan so a colony can spill across its cell without seams.
-   ringy=1 adds concentric structure, a dark centre and a fuzzy mycelial halo. */
-void fieldPass(vec2 p, float inside, float cs, float rlo, float rhi,
-               float keep, float seed, float ringy, inout vec3 col){
- vec2 g0=floor(p/cs);
- for(int j=-1;j<=1;j++){
-  for(int i=-1;i<=1;i++){
-   vec2 cell=g0+vec2(float(i),float(j));
-   float h0=h21(cell*1.13+seed);
-   if(h0>keep) continue;
-   vec2 ctr=(cell+0.5+(vec2(h21(cell+seed+3.3),h21(cell+seed+9.7))-0.5)*0.85)*cs;
-   if(length(ctr)>0.39) continue;
-   float birth=0.13+0.45*h21(cell+seed+5.5);
-   float s=smoothstep(birth,birth+0.15,uP);
-   if(s<=0.001) continue;
-   float r=cs*mix(rlo,rhi,h21(cell+seed+2.9))*s;
-   float dd=length(p-ctr)+(vn2(p*95.0+cell)-0.5)*0.006*(1.0+ringy);
-   if(dd>r*1.9) continue;
-   float nd=clamp(dd/max(r,1e-4),0.0,1.0);
-   float hc=h21(cell+seed+12.7);
-   vec3 cc=colonyColor(hc);
-   cc*=0.88+0.12*vn2(p*140.0+cell);
-   cc*=1.0-ringy*(0.16*(0.5+0.5*cos(nd*16.0+hc*6.0))*smoothstep(0.15,0.8,nd)+0.18*smoothstep(0.35,0.0,nd));
-   cc*=1.0-0.30*smoothstep(0.55,1.0,nd);
-   cc+=vec3(0.20)*pow(max(0.0,1.0-length(p-ctr+vec2(r*0.30,-r*0.30))/max(r,1e-4)),3.0);
-   float body=smoothstep(r,r*0.78,dd)*inside;
-   col=mix(col,cc,body*0.95);
-   if(ringy>0.5){
-    float halo=smoothstep(r*1.85,r*1.0,dd)*(1.0-smoothstep(r*1.05,r*0.9,dd));
-    float fuzz=pow(vn2(p*170.0+cell*7.0),2.6);
-    col=mix(col,MWHITE*0.85,halo*fuzz*0.55*inside*s);
-   }
-  }
- }
-}
-/* ambient life for the opening frame, before any scrolling: colonies near the
-   rim keep appearing and giving way to new ones on staggered ~45 s cycles.
-   Fades out (amb -> 0) once the scroll story takes over. */
-void ambientPass(vec2 p, float inside, float amb, inout vec3 col){
- float cs=0.062;
- vec2 g0=floor(p/cs);
- for(int j=-1;j<=1;j++){
-  for(int i=-1;i<=1;i++){
-   vec2 cell=g0+vec2(float(i),float(j));
-   float h0=h21(cell*1.31+51.7);
-   if(h0>0.50) continue;
-   vec2 ctr=(cell+0.5+(vec2(h21(cell+53.1),h21(cell+57.9))-0.5)*0.8)*cs;
-   float cr=length(ctr);
-   if(cr<0.24||cr>0.39) continue;
-   float ph=h21(cell+61.3);
-   float cyc=fract(uTime*0.022+ph);
-   float s=smoothstep(0.00,0.35,cyc)*(1.0-smoothstep(0.75,1.0,cyc));
-   float r=cs*(0.10+0.26*h21(cell+64.7))*s;
-   if(r<=0.0004) continue;
-   float dd=length(p-ctr)+(vn2(p*95.0+cell)-0.5)*0.004;
-   if(dd>r*1.3) continue;
-   float nd=clamp(dd/max(r,1e-4),0.0,1.0);
-   vec3 cc=colonyColor(h21(cell+68.9));
-   cc*=0.90+0.10*vn2(p*140.0+cell);
-   cc*=1.0-0.28*smoothstep(0.55,1.0,nd);
-   float body=smoothstep(r,r*0.75,dd)*inside;
-   col=mix(col,cc,body*0.85*amb);
-  }
- }
-}
-/* a few microbes visibly swimming under the lid in the opening frame */
-void swimmers(vec2 p, float inside, float amb, float t, inout vec3 col){
- for(int i=0;i<7;i++){
-  float fi=float(i);
-  float a1=h21(vec2(fi,91.3)),a2=h21(vec2(fi,93.7)),a3=h21(vec2(fi,95.1));
-  float rad=0.20+0.16*a3;
-  vec2 ctr=vec2(sin(t*(0.10+0.10*a1)+a2*6.28),cos(t*(0.07+0.09*a2)+a3*6.28))*rad;
-  float wig=sin(t*(2.0+3.0*a1)+fi)*0.008;
-  ctr+=vec2(wig,-wig*0.7);
-  float dd=length(p-ctr);
-  col+=vec3(0.75,0.80,0.72)*exp(-dd*dd*41000.0)*0.35*amb*inside;
-  vec2 ctr2=vec2(sin((t-0.35)*(0.10+0.10*a1)+a2*6.28),cos((t-0.35)*(0.07+0.09*a2)+a3*6.28))*rad;
-  float dt2=length(p-ctr2);
-  col+=vec3(0.70,0.76,0.70)*exp(-dt2*dt2*20000.0)*0.12*amb*inside;
- }
+float leafSD(vec2 q, vec2 b, float ang, float ln, float wd){
+ vec2 d=q-b;
+ float ca=cos(ang), sa=sin(ang);
+ d=vec2(ca*d.x+sa*d.y,-sa*d.x+ca*d.y);
+ d.x-=ln*0.5;
+ return length(d/vec2(ln*0.55,wd))-1.0;
 }
 
 void main(){
  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;
  float t=uTime;
- vec2 m=uMouse;
+ vec2 p=uv+uMouse*0.015;
+ float gy=0.10;
 
- /* slow push-in as the story advances */
- float zoom=1.0+0.35*smoothstep(0.15,0.95,uP);
- vec2 p=(uv+m*0.02)/zoom;
- p.y+=0.015;
+ /* ------- timeline ------- */
+ float les    = smoothstep(0.04,0.16,uP)*(1.0-smoothstep(0.62,0.80,uP));
+ float pests  = smoothstep(0.05,0.16,uP);
+ float spray  = smoothstep(0.43,0.46,uP)*(1.0-smoothstep(0.58,0.63,uP));
+ float sx     = mix(-0.85,0.85,smoothstep(0.44,0.58,uP));
+ float sprayed= smoothstep(0.50,0.62,uP);
+ float lifeR  = smoothstep(0.66,0.88,uP);
+ float healthy= smoothstep(0.78,0.94,uP);
+ float plantH = 0.38;
+ plantH=mix(plantH,0.46,smoothstep(0.52,0.64,uP));
+ plantH=mix(plantH,1.0,smoothstep(0.74,0.94,uP));
+ float S = mix(mix(0.40,0.10,sprayed),1.0,lifeR);
 
- float R=0.42;
- float pr=length(p);
- float inside=smoothstep(R,R-0.006,pr);
+ float gm=smoothstep(gy+0.003,gy-0.003,p.y);
+ float am=1.0-gm;
 
- /* bench + backlight pool behind the dish */
- vec3 col=BG*(0.65+0.75*exp(-pr*pr*2.2));
- col*=0.92+0.08*vn2(uv*14.0);
+ /* ------- sky ------- */
+ vec3 col=mix(vec3(0.045,0.075,0.050),vec3(0.012,0.020,0.014),smoothstep(gy,0.52,p.y));
 
- /* agar — translucent amber, lit from below, faint pour streaks */
- vec3 ag=mix(AGAR_D,AGAR_L,pow(clamp(1.0-pr/R,0.0,1.0),0.65)*(0.72+0.28*fbm2(p*6.0+3.7)));
- ag*=0.93+0.07*vn2(p*34.0);
- float hot=exp(-length(p-vec2(0.10,0.12)-m*0.05)*3.0);
- ag+=vec3(0.095,0.100,0.092)*hot;
- col=mix(col,ag,inside);
+ /* ------- soil ------- */
+ vec3 rich=vec3(0.235,0.150,0.085)*(0.75+0.50*fbm2(p*7.0));
+ rich+=vec3(0.30,0.20,0.11)*pow(vn2(p*26.0),3.0)*0.45;
+ vec3 gray=vec3(0.120,0.120,0.112)*(0.80+0.30*fbm2(p*7.0));
+ vec3 tired=mix(gray,rich,0.42);
+ vec3 soil=mix(tired,gray,sprayed);
+ soil=mix(soil,rich,lifeR);
+ soil*=0.96+0.04*sin(p.y*46.0+fbm2(p*3.0)*3.0);
+ soil*=1.0-0.55*smoothstep(gy,-0.55,p.y);
+ col=mix(col,soil,gm);
 
- /* ambient life while the visitor has not scrolled yet */
- float amb=1.0-smoothstep(0.06,0.22,uP);
- if(amb>0.003) ambientPass(p,inside,amb,col);
+ /* chemical seeping below the spray front */
+ float seep=exp(-pow((p.x-sx)*2.4,2.0))*gm*smoothstep(gy-0.34,gy,p.y)*spray;
+ col=mix(col,vec3(0.40,0.42,0.42),seep*0.30);
 
- /* ---- the mixed plate: one organism first, then colony after colony,
-    each species its own colour — small dots and large ringed mats ---- */
- vec2 c0=vec2(-0.06,0.03);
- vec2 q=p-c0; float d=length(q);
- fieldPass(p,inside,0.046,0.14,0.34,0.62, 7.1,0.0,col);
- fieldPass(p,inside,0.110,0.22,0.46,0.45,31.7,1.0,col);
+ /* ------- mycelium filaments (regeneration) ------- */
+ float fil=pow(1.0-abs(vn2(p*15.0+3.1)*2.0-1.0),6.0);
+ float fst=fbm2(p*2.3)*0.85;
+ float frv=smoothstep(fst,fst+0.18,lifeR);
+ col+=vec3(0.72,0.80,0.58)*fil*frv*gm*0.10;
+ col+=GRN_L*fil*frv*gm*0.05;
 
- /* the very first colony — a single organism before the field appears */
- float r0=0.014*smoothstep(0.03,0.14,uP);
- float d0=d+(vn2(p*80.0)-0.5)*0.004;
- float dot0=smoothstep(r0,r0*0.55,d0)*inside*step(0.001,r0);
- col=mix(col,MWHITE*0.95,dot0*0.9);
-
- /* germination pulse on that first organism */
- float gp=exp(-d*d*900.0)*smoothstep(0.02,0.09,uP)*(1.0-smoothstep(0.12,0.30,uP));
- col+=mix(MWHITE,GRN_L,0.5)*gp*(0.55+0.45*sin(t*3.0));
-
- if(amb>0.003) swimmers(p,inside,amb,t,col);
-
- /* ---- the Trichoderma mat takes the plate in the final act ---- */
- float grow=smoothstep(0.40,0.78,uP);
- float g=R*0.94*pow(grow,0.85);
- float e=colonyEdge(g,q);
- float inCol=smoothstep(e,e-0.028,d)*inside;
-
- /* white hyphal margin ring, green sporulating interior with growth rings */
- float w=smoothstep(e+0.004,e-0.020,d)*smoothstep(e-0.130,e-0.055,d);
- float rn=0.5+0.5*cos(d*95.0-2.0+fbm2(q*7.0)*2.2);
- vec3 gcol=mix(GRN_D,GRN_L,0.30+0.40*rn+0.25*fbm2(q*11.0+1.7));
- gcol*=0.80+0.26*fbm2(q*17.0+9.1);
- vec3 ccol=mix(gcol,MWHITE,clamp(w,0.0,0.88));
- col=mix(col,ccol,inCol*0.96);
-
- /* hairy advancing margin just past the edge */
- float fr=smoothstep(e+0.034,e,d)*(1.0-smoothstep(e,e-0.012,d));
- float hairs=pow(vn2(vec2(atan(q.y,q.x+1e-5)*38.0,d*110.0)+t*0.06),3.0);
- col+=MWHITE*hairs*fr*inside*0.85;
-
- /* ---- seedling germination assay (final chapter) ---- */
- float sg=smoothstep(0.70,0.96,uP);
- if(sg>0.001){
-  vec2 s0=vec2(0.15,0.17);
-  vec2 s1=s0+vec2(-0.020,-0.105);
-  vec2 s2=s1+vec2( 0.034,-0.110);
-  vec2 s3=s2+vec2(-0.022,-0.120);
-  float f1=clamp(sg*3.0,0.0,1.0),f2=clamp(sg*3.0-1.0,0.0,1.0),f3=clamp(sg*3.0-2.0,0.0,1.0);
-  float dr=dseg(p,s0,s1,f1);
-  dr=min(dr,dseg(p,s1,s2,f2));
-  dr=min(dr,dseg(p,s2,s3,f3));
-  dr+=(vn2(p*90.0)-0.5)*0.004;
-  float wdt=mix(0.0080,0.0022,clamp((s0.y-p.y)/0.36,0.0,1.0));
-  float root=smoothstep(wdt,wdt*0.35,dr)*inside*smoothstep(0.02,0.20,sg);
-  float hair=pow(vn2(p*150.0),5.0)*smoothstep(wdt*5.0,wdt,dr)*0.6;
-  vec3 rc=ROOTC*(0.80+0.20*vn2(p*70.0));
-  col=mix(col,rc,root);
-  col+=MWHITE*hair*inside*sg;
-  /* protective sheath where the colony wraps the root */
-  float sheath=smoothstep(wdt*6.0,wdt*1.3,dr)*inCol;
-  col+=GRN_L*sheath*(0.10+0.08*sin(t*1.4+p.y*22.0));
-  float ds=length((p-s0)*vec2(1.0,0.72));
-  float seedm=smoothstep(0.024,0.014,ds)*smoothstep(0.02,0.15,sg);
-  col=mix(col,vec3(0.24,0.175,0.105),seedm);
-  col+=MWHITE*smoothstep(0.010,0.002,length(p-s0-vec2(0.006,0.006)))*seedm*0.5;
+ /* ------- soil life specks ------- */
+ {
+  float cs=0.052;
+  vec2 cell=floor(p/cs);
+  vec2 ctr=(cell+0.5+(vec2(h21(cell+3.3),h21(cell+9.7))-0.5)*0.6)*cs;
+  if(ctr.y<gy-0.02 && ctr.y>-0.52){
+   float hh=h21(cell+1.3);
+   float d0=0.12*(1.0-sprayed);
+   vec2 heart=vec2(-0.03,gy-0.16);
+   float w=1.0-clamp((length(ctr-heart)-0.10)*1.6,0.0,0.65);
+   float hb=h21(cell+9.1)*0.85;
+   float reg=smoothstep(hb,hb+0.12,lifeR)*0.60*w;
+   float vis=step(hh,d0+reg);
+   float sz=0.0035*(0.6+0.9*h21(cell+4.4));
+   float dd=length(p-ctr);
+   float glow=exp(-dd*dd/(sz*sz*2.2))*vis;
+   vec3 scol=mix(vec3(0.38,0.32,0.16),GRN_L*(0.9+0.25*sin(t*2.0+hh*7.0)),lifeR);
+   col+=scol*glow*(0.35+0.45*lifeR+0.30*uAudio);
+  }
  }
 
- /* dish rim, lid gloss, condensation, dust motes */
- float ang=atan(p.y,p.x+1e-5);
- float rim=smoothstep(0.011,0.002,abs(pr-R));
- float spec=0.30+0.70*pow(max(cos(ang-2.35-m.x*1.2),0.0),3.0);
- col+=MWHITE*rim*spec*0.55;
- float rim2=smoothstep(0.020,0.006,abs(pr-(R+0.016)));
- col+=MWHITE*rim2*spec*0.12;
- float gl2=exp(-pow((length(p-vec2(-0.16,0.30))-0.30)*9.0,2.0));
- col+=MWHITE*gl2*0.05*inside;
- vec2 rp=mat2(0.83,-0.56,0.56,0.83)*p;
- float cond=pow(vn2(rp*63.0+13.0),10.0);
- col+=MWHITE*cond*inside*0.18;
- float mo=pow(vn2(uv*9.0+vec2(t*0.05,-t*0.03)),14.0);
- col+=MWHITE*mo*0.24;
+ /* ------- root system ------- */
+ vec2 r0=vec2(-0.040,gy);
+ vec2 r1=r0+vec2(-0.015,-0.110);
+ vec2 r2=r1+vec2( 0.020,-0.120);
+ vec2 r3=r2+vec2(-0.012,-0.135);
+ float dr=dseg(p,r0,r1,1.0);
+ dr=min(dr,dseg(p,r1,r2,mix(0.55,1.0,healthy)));
+ dr=min(dr,dseg(p,r2,r3,healthy));
+ dr=min(dr,dseg(p,r1,r1+vec2(-0.100,-0.055),mix(0.5,1.0,healthy)));
+ dr=min(dr,dseg(p,r1,r1+vec2( 0.075,-0.048),mix(0.5,1.0,healthy)));
+ dr=min(dr,dseg(p,r2,r2+vec2(-0.085,-0.060),healthy));
+ dr=min(dr,dseg(p,r2,r2+vec2( 0.095,-0.055),healthy));
+ dr=min(dr,dseg(p,r3,r3+vec2(-0.060,-0.070),healthy));
+ dr=min(dr,dseg(p,r3,r3+vec2( 0.070,-0.065),healthy));
+ dr+=(vn2(p*80.0)-0.5)*0.003;
+ float wdt=mix(0.0065,0.0018,clamp((gy-p.y)/0.50,0.0,1.0));
+ float root=smoothstep(wdt,wdt*0.38,dr)*gm;
+ col=mix(col,ROOTC*(0.72+0.28*vn2(p*70.0)),root);
+ float hair=pow(vn2(p*165.0),5.0)*smoothstep(wdt*5.0,wdt,dr)*healthy*gm;
+ col+=vec3(0.85,0.83,0.72)*hair*0.45;
 
- col+=GRN_L*inCol*uAudio*0.10;
+ /* defense halo + repelled pest (final act) */
+ vec2 heart2=vec2(-0.03,gy-0.17);
+ float rr=length(p-heart2);
+ float halo=exp(-pow((rr-0.165)*9.5,2.0))*healthy*gm;
+ col+=GRN_L*halo*0.10*(0.75+0.25*sin(t*1.6));
+ float ap=smoothstep(0.84,0.905,uP);
+ float rep=smoothstep(0.905,0.96,uP);
+ float pa=smoothstep(0.835,0.86,uP)*(1.0-smoothstep(0.94,0.985,uP));
+ vec2 en=vec2(mix(0.52,0.155,ap)+rep*0.22, gy-0.17+0.015*sin(t*2.3));
+ float de=length(p-en);
+ col=mix(col,RUST,exp(-de*de*26000.0)*pa*gm);
+ float gfl=exp(-pow((uP-0.905)*46.0,2.0));
+ col+=GRN_L*gfl*exp(-pow(length(p-vec2(0.145,gy-0.17))*8.0,2.0))*0.5*gm;
 
+ /* ------- grass line ------- */
+ float gh=(0.006+0.028*pow(vn2(vec2(p.x*44.0,7.1)),2.5))*(0.35+0.65*S);
+ float grass=step(gy,p.y)*step(p.y,gy+gh);
+ col=mix(col,mix(vec3(0.13,0.18,0.07),vec3(0.24,0.42,0.12),S),grass*0.92);
+ col+=vec3(0.30,0.40,0.18)*exp(-abs(p.y-gy)*140.0)*0.10*(0.3+0.7*S);
+
+ /* ------- plant ------- */
+ float bend=(1.0-plantH)*0.075+0.004*sin(t*0.7);
+ vec2 s0=vec2(-0.040,gy);
+ vec2 s1=s0+vec2(bend*0.35,0.105);
+ vec2 s2=s1+vec2(bend*0.75,0.100);
+ vec2 s3=s2+vec2(bend*1.10,0.055+0.075*plantH);
+ float ds=dseg(p,s0,s1,1.0);
+ ds=min(ds,dseg(p,s1,s2,1.0));
+ ds=min(ds,dseg(p,s2,s3,1.0));
+ float sw=mix(0.0060,0.0026,clamp((p.y-gy)/0.30,0.0,1.0));
+ float stem=smoothstep(sw,sw*0.4,ds)*am;
+ vec3 pcol=mix(vec3(0.30,0.34,0.10),vec3(0.14,0.38,0.12),plantH);
+ col=mix(col,pcol,stem);
+
+ float dro=(1.0-plantH)*0.55;
+ float lf=1e3;
+ lf=min(lf,leafSD(p,s1,2.45+dro,0.085,0.020));
+ lf=min(lf,leafSD(p,mix(s1,s2,0.55),0.62-dro,0.078,0.018));
+ lf=min(lf,leafSD(p,s2,2.60+dro,0.070,0.016));
+ float lf2=1e3;
+ lf2=min(lf2,leafSD(p,s3,2.30,0.075,0.017));
+ lf2=min(lf2,leafSD(p,s3,0.80,0.075,0.017));
+ float fill=smoothstep(0.02,-0.30,lf)*am;
+ float fill2=smoothstep(0.02,-0.30,lf2)*am*healthy;
+ vec3 lcol=mix(vec3(0.30,0.33,0.09),vec3(0.15,0.40,0.12),plantH);
+ lcol*=0.85+0.30*vn2(p*60.0);
+ col=mix(col,lcol,max(fill,fill2)*0.95);
+ float spots=pow(vn2(p*95.0+3.0),5.0)*les;
+ col=mix(col,vec3(0.15,0.10,0.05),fill*spots*1.6);
+
+ /* ------- pests on the plant ------- */
+ for(int i=0;i<6;i++){
+  float fi=float(i);
+  float hx=h21(vec2(fi,31.7));
+  vec2 pp=vec2(-0.045,gy+0.12)+vec2(sin(t*0.45+fi*2.1)*(0.055+0.055*hx),
+                                    0.055*sin(t*0.7+fi*1.7)+0.10*hx-0.03);
+  float kp=0.44+0.14*clamp((pp.x+0.85)/1.70,0.0,1.0);
+  float alive=pests*(1.0-smoothstep(kp,kp+0.012,uP));
+  float dpp=length(p-pp);
+  col=mix(col,RUST,exp(-dpp*dpp*30000.0)*alive*am);
+  float fl=exp(-pow((uP-kp)*60.0,2.0))*step(0.44,uP)*step(uP,0.62);
+  col+=vec3(0.95,0.90,0.75)*fl*exp(-dpp*dpp*9000.0)*0.8*am;
+ }
+
+ /* ------- spray mist ------- */
+ float vprof=smoothstep(gy,gy+0.04,p.y)*(1.0-smoothstep(0.30,0.46,p.y));
+ float mist=exp(-pow((p.x-sx)*3.0,2.0))*vprof*spray;
+ col+=vec3(0.72,0.82,0.82)*mist*0.40;
+ col+=vec3(0.72,0.82,0.82)*pow(vn2(p*30.0+vec2(0.0,t*0.5)),2.0)*mist*0.35;
+
+ /* ------- bio drops ------- */
+ for(int i=0;i<5;i++){
+  float fi=float(i);
+  float dx=-0.30+0.14*fi+(h21(vec2(fi,77.7))-0.5)*0.05;
+  float fall=clamp((uP-0.63-0.014*fi)/0.045,0.0,1.15);
+  float da=step(0.001,fall)*(1.0-smoothstep(1.0,1.12,fall));
+  float dy=mix(0.40,gy-0.004,min(fall,1.0));
+  vec2 dpos=vec2(dx,dy);
+  float dd2=length((p-dpos)*vec2(1.0,0.75));
+  col+=GRN_L*exp(-dd2*dd2*22000.0)*da*1.1;
+  float sp2=exp(-abs(fall-1.0)*22.0)*exp(-pow((p.x-dx)*24.0,2.0))*exp(-abs(p.y-gy)*90.0)*step(0.9,fall)*da;
+  col+=GRN_L*sp2*0.55;
+ }
+
+ /* ------- fireflies at the portada ------- */
+ float amb=1.0-smoothstep(0.10,0.28,uP);
+ float ff=pow(vn2(uv*7.0+vec2(t*0.05,-t*0.02)),13.0)*am*amb;
+ col+=vec3(0.90,0.85,0.50)*ff*1.4;
+
+ /* ------- grade ------- */
  col*=clamp(1.0-0.42*dot(uv,uv),0.0,1.0);
  col=col/(1.0+col);
  col=pow(col,vec3(0.4545));
@@ -1192,8 +1159,8 @@ function blip(f){
 
 /* ==================== story ==================== */
 var CH=[
- {n:'Portada',at:0.00},{n:'La espora',at:0.20},{n:'La competencia',at:0.42},
- {n:'Antagonismo',at:0.62},{n:'La raíz',at:0.82}
+ {n:'Portada',at:0.00},{n:'El problema',at:0.20},{n:'El químico',at:0.42},
+ {n:'La solución',at:0.62},{n:'El resultado',at:0.82}
 ];
 var panes=[].slice.call(document.querySelectorAll('.pane'));
 var ticks=[].slice.call(document.querySelectorAll('#rail i'));
