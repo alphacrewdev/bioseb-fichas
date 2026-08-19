@@ -1981,6 +1981,48 @@ function onScroll(){
 }
 addEventListener('scroll',onScroll,{passive:true}); onScroll();
 
+/* ---- keyboard chapter navigation ----
+   A default arrow-key nudge is ~40px, roughly 2% of the story, so the hero
+   reads as unresponsive to keyboard users. Inside the stage, arrows, page keys
+   and space jump one chapter; past the last one the page scrolls normally. */
+var kLock=0;
+function heroKeyNav(e){
+  if(autoStory) return;                       /* timed fallback inside preview frames */
+  if(e.defaultPrevented||e.metaKey||e.ctrlKey||e.altKey) return;
+  var fm=document.getElementById('fmodal');
+  if(fm&&!fm.hidden) return;                  /* ficha viewer is open */
+  var t=e.target, tag=t&&t.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||tag==='BUTTON'||tag==='A'||(t&&t.isContentEditable)) return;
+  var space=(e.key===' '||e.key==='Spacebar');
+  var down=(e.key==='ArrowDown'||e.key==='PageDown'||(space&&!e.shiftKey));
+  var up  =(e.key==='ArrowUp'||e.key==='PageUp'||(space&&e.shiftKey));
+  if(!down&&!up) return;
+
+  var st=document.getElementById('stage');
+  if(!st) return;
+  var top=st.offsetTop, h=st.offsetHeight-innerHeight;
+  if(h<=0) return;
+  var p=(scrollY-top)/h;
+  if(p<0||p>0.995) return;                    /* outside the story: normal scrolling */
+
+  if(performance.now()<kLock){ e.preventDefault(); return; }  /* a jump is still animating */
+
+  var i=0;
+  for(var a=0;a<CH.length;a++) if(p>=CH[a].at-0.012) i=a;
+
+  var to;
+  if(down){
+    to = (i>=CH.length-1) ? top+h : top+Math.min(1,CH[i+1].at+0.01)*h;
+  }else{
+    if(i<=0) return;                          /* first chapter: let the page scroll up */
+    to = top+Math.max(0,CH[i-1].at+(i>1?0.01:0))*h;
+  }
+  e.preventDefault();
+  kLock=performance.now()+420;
+  scrollTo({top:to,behavior:reduce?'auto':'smooth'});
+}
+addEventListener('keydown',heroKeyNav);
+
 /* no cursor on touch — substitute a slow autonomous drift so it still breathes */
 if(!isTouch){
   addEventListener('pointermove',function(e){
