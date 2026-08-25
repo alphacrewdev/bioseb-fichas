@@ -1722,19 +1722,11 @@ void main(){
  float hair=pow(vn2(p*165.0),5.0)*smoothstep(wdt*5.0,wdt,dr)*healthy*gm;
  col+=vec3(0.85,0.83,0.72)*hair*0.45;
 
- /* defense halo + repelled pest (final act) */
+ /* defense halo (final act) — repelled-pest dot removed per client */
  vec2 heart2=vec2(-0.03,gy-0.17);
  float rr=length(p-heart2);
  float halo=exp(-pow((rr-0.165)*9.5,2.0))*healthy*gm;
  col+=GRN_L*halo*0.10*(0.75+0.25*sin(t*1.6));
- float ap=smoothstep(0.84,0.905,uP);
- float rep=smoothstep(0.905,0.96,uP);
- float pa=smoothstep(0.835,0.86,uP)*(1.0-smoothstep(0.94,0.985,uP));
- vec2 en=vec2(mix(0.52,0.155,ap)+rep*0.22, gy-0.17+0.015*sin(t*2.3));
- float de=length(p-en);
- col=mix(col,RUST,exp(-de*de*26000.0)*pa*gm);
- float gfl=exp(-pow((uP-0.905)*46.0,2.0));
- col+=GRN_L*gfl*exp(-pow(length(p-vec2(0.145,gy-0.17))*8.0,2.0))*0.5*gm;
 
  /* ------- grass line: wider tufts, soft anti-aliased tips ------- */
  float gn=vn2(vec2(p.x*26.0,7.1))*0.65+vn2(vec2(p.x*57.0,3.7))*0.35;
