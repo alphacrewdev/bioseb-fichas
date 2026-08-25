@@ -1647,7 +1647,7 @@ void main(){
 
  /* ------- sky: sunny yellow-green + sun glow and rays over the plant ------- */
  vec3 col=mix(vec3(0.95,0.85,0.30),vec3(0.18,0.22,0.085),smoothstep(gy,0.50,p.y));
- vec2 sunP=vec2(-0.12,0.46);
+ vec2 sunP=vec2(0.50,0.44);
  vec2 sd=uv-sunP;
  float sun=exp(-pow(length(sd)*1.9,2.0));
  col+=vec3(1.0,0.88,0.38)*sun*0.70*am;
@@ -1766,7 +1766,7 @@ void main(){
  col=mix(col,vec3(0.15,0.10,0.05),fill*spots*1.6);
 
  /* warm sunlight falling on the seedling */
- col+=vec3(1.0,0.80,0.40)*exp(-pow(length(p-vec2(-0.02,0.27))*3.0,2.0))*am*0.25*(0.55+0.45*S);
+ col+=vec3(1.0,0.80,0.40)*exp(-pow(length(p-vec2(0.03,0.28))*3.0,2.0))*am*0.25*(0.55+0.45*S);
 
  /* ------- pests on the plant ------- */
  for(int i=0;i<6;i++){
