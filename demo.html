@@ -133,11 +133,13 @@ a{color:var(--accent)}
 #stage{position:relative;height:340vh;height:340svh;z-index:1}
 #glwrap{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
 canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
-/* Soft vignette — hero is a light golden-green now (client: "más clarito"),
-   so this stays translucent deep-olive instead of fading to near-black. */
+/* Vignette: sky stays sunny, but the soil keeps the original dark shadow
+   framing — bottom-weighted gradient + soft radial at the edges. */
 #glwrap::after{
   content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
-  background:radial-gradient(115% 80% at 20% 45%,transparent 34%,rgba(16,22,9,.18) 70%,rgba(16,22,9,.36) 100%);
+  background:
+    radial-gradient(115% 80% at 20% 45%,transparent 34%,rgba(16,22,9,.18) 70%,rgba(16,22,9,.36) 100%),
+    linear-gradient(to top,rgba(10,12,7,.72) 0%,rgba(10,12,7,.42) 26%,rgba(10,12,7,.12) 46%,transparent 60%);
 }
 /* Text scrim. Guarantees copy stays legible over whatever the canvas is doing —
    both edges on desktop where panes alternate left/right, bottom on phones. */
@@ -1643,10 +1645,15 @@ void main(){
  float gm=smoothstep(gy+0.003,gy-0.003,p.y);
  float am=1.0-gm;
 
- /* ------- sky: sunny yellow-green, golden at the horizon (client ref foto) ------- */
+ /* ------- sky: sunny yellow-green + sun glow and rays over the plant ------- */
  vec3 col=mix(vec3(0.95,0.85,0.30),vec3(0.18,0.22,0.085),smoothstep(gy,0.50,p.y));
- float sun=exp(-pow(length(uv-vec2(-0.55,0.45))*2.2,2.0));
- col+=vec3(1.0,0.90,0.40)*sun*0.50*am;
+ vec2 sunP=vec2(-0.12,0.46);
+ vec2 sd=uv-sunP;
+ float sun=exp(-pow(length(sd)*1.9,2.0));
+ col+=vec3(1.0,0.88,0.38)*sun*0.70*am;
+ float sa=atan(sd.y,sd.x);
+ float rays=max(0.0,0.6*sin(sa*9.0+t*0.06)+0.4*sin(sa*15.0-t*0.04));
+ col+=vec3(1.0,0.85,0.42)*pow(rays,2.0)*exp(-length(sd)*2.1)*am*0.35;
  col+=vec3(0.34,0.40,0.12)*pow(fbm2(uv*3.2+vec2(t*0.015,0.0)),3.0)*am*0.45;
  col*=0.86+0.18*S;
 
@@ -1659,7 +1666,7 @@ void main(){
  soil=mix(soil,rich,lifeR);
  soil+=vec3(0.10,0.075,0.045)*(vn2(p*95.0)-0.5);
  soil*=0.96+0.04*sin(p.y*46.0+fbm2(p*3.0)*3.0);
- soil*=1.0-0.42*smoothstep(gy,-0.55,p.y);
+ soil*=1.0-0.55*smoothstep(gy,-0.55,p.y);
  col=mix(col,soil,gm);
 
  /* chemical seeping below the spray front */
@@ -1765,6 +1772,9 @@ void main(){
  col=mix(col,lcol,max(fill,fill2)*0.95);
  float spots=pow(vn2(p*95.0+3.0),5.0)*les;
  col=mix(col,vec3(0.15,0.10,0.05),fill*spots*1.6);
+
+ /* warm sunlight falling on the seedling */
+ col+=vec3(1.0,0.80,0.40)*exp(-pow(length(p-vec2(-0.02,0.27))*3.0,2.0))*am*0.25*(0.55+0.45*S);
 
  /* ------- pests on the plant ------- */
  for(int i=0;i<6;i++){
