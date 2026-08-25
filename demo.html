@@ -1725,7 +1725,8 @@ void main(){
  col+=vec3(0.38,0.48,0.20)*exp(-abs(p.y-gy)*140.0)*0.12*(0.3+0.7*S);
 
  /* ------- plant ------- */
- float bend=(1.0-plantH)*0.075+0.004*sin(t*0.7);
+ float swayAmp=mix(0.020,0.007,healthy);
+ float bend=swayAmp*sin(t*0.35)+swayAmp*0.35*sin(t*0.85+2.0);
  vec2 s0=vec2(-0.040,gy);
  vec2 s1=s0+vec2(bend*0.35,0.105);
  vec2 s2=s1+vec2(bend*0.75,0.100);
