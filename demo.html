@@ -1861,7 +1861,8 @@ function resize(){
   var r=cv.getBoundingClientRect();
   if(!r.width||!r.height) return;
   var q=quality();
-  var w=Math.max(1,Math.floor(r.width*q.s)), h=Math.max(1,Math.floor(r.height*q.s));
+  var dpr=Math.min(devicePixelRatio||1, small?1.5:2);
+  var w=Math.max(1,Math.floor(r.width*q.s*dpr)), h=Math.max(1,Math.floor(r.height*q.s*dpr));
   if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; gl.viewport(0,0,w,h); }
 }
 resize();
