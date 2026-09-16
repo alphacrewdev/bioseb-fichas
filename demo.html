@@ -492,8 +492,10 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--bg-2);padding:.1
 .capx-im::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,#fff 2%,rgba(255,255,255,.25) 32%,transparent 58%)}
 .capx-pill{position:absolute;left:1.1rem;bottom:.9rem;z-index:2;font-family:var(--f-mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;background:var(--u);color:var(--pc);padding:.34rem .8rem;border-radius:99px;box-shadow:0 4px 12px -4px rgba(0,0,0,.3)}
 .capx-bd{display:flex;flex-direction:column;gap:.8rem;padding:1.35rem 1.4rem 1.5rem;flex:1}
-.capx-tr{display:flex;align-items:center;gap:.8rem}
-.kyan-logo{height:4.5rem;width:auto;display:block} /* stacked mark + wordmark (client, sep 2026) */
+/* both card logos share this row height so the paragraph below starts at the
+   same y in every card, whatever the logo's own aspect ratio (client, sep 2026) */
+.capx-tr{display:flex;align-items:center;gap:.8rem;height:2.9rem}
+.kyan-logo{height:2.9rem;width:auto;display:block}
 .bioseb-logo{height:1.7rem;width:auto;display:block}
 .cap-logo.sm{width:3rem;height:3rem;border-radius:10px}
 .cap-logo.sm img{width:1.9rem;height:1.9rem}
