@@ -174,7 +174,6 @@ body.nogl #glwrap{background:
   transition:opacity .7s cubic-bezier(.22,.9,.28,1),transform .7s cubic-bezier(.22,.9,.28,1);
 }
 .pane.on{opacity:1;transform:translateY(-50%)}
-.pane.r{left:auto;right:var(--gut);text-align:right}
 .kick{
   display:inline-flex;align-items:center;gap:.5rem;
   font-family:var(--f-mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;
@@ -188,7 +187,6 @@ body.nogl #glwrap{background:
 .pane h2{color:#FFFFFF;font-size:clamp(1.55rem,3.9vw,2.7rem);line-height:1.08;letter-spacing:-.038em;text-shadow:0 2px 12px rgba(10,12,7,.5),0 4px 38px rgba(10,12,7,.6)}
 .pane p{font-size:clamp(.97rem,1.5vw,1.14rem);line-height:1.52;color:#FFFFFF;margin-top:.9rem;text-shadow:0 1px 6px rgba(10,12,7,.6),0 2px 24px rgba(10,12,7,.85)}
 .ctas{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:1.6rem;pointer-events:auto}
-.pane.r .ctas{justify-content:flex-end}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:.55rem;text-decoration:none;
   font-family:var(--f-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
@@ -216,15 +214,14 @@ body.nogl #glwrap{background:
 }
 #hint.hide{opacity:0}
 
-/* ---- phones: bottom-anchor the panes, always left-aligned ---- */
+/* ---- phones: bottom-anchor the panes ---- */
 @media (max-width:760px){
   #stage{height:300svh}
-  .pane,.pane.r{
-    left:var(--gut);right:var(--gut);width:auto;text-align:left;
+  .pane{
+    left:var(--gut);right:var(--gut);width:auto;
     top:auto;bottom:4.75rem;transform:translateY(16px);
   }
-  .pane.on,.pane.r.on{transform:none}
-  .pane.r .ctas{justify-content:flex-start}
+  .pane.on{transform:none}
   .ctas{margin-top:1.25rem}
   .btn{flex:1 1 auto;min-width:9.5rem}
   #hint{display:none}
@@ -232,10 +229,9 @@ body.nogl #glwrap{background:
 }
 /* ---- short / landscape phones ---- */
 @media (max-height:560px) and (orientation:landscape){
-  /* keep the desktop left/right anchoring (no right:auto, which sent .pane.r to x=0);
-     bottom-anchor like the phone rule, so top:50% + translateY must be cleared too */
-  .pane,.pane.r{top:auto;bottom:3.25rem;width:min(26rem,calc(100% - var(--gut)*2));transform:translateY(16px)}
-  .pane.on,.pane.r.on{transform:none}
+  /* bottom-anchor like the phone rule, so top:50% + translateY must be cleared too */
+  .pane{top:auto;bottom:3.25rem;width:min(26rem,calc(100% - var(--gut)*2));transform:translateY(16px)}
+  .pane.on{transform:none}
   .pane h1{font-size:1.75rem}
   .pane h2{font-size:1.3rem}
   .pane p{font-size:.88rem;margin-top:.55rem;line-height:1.45}
@@ -881,7 +877,7 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--bg-2);padding:.1
         </div>
       </div>
 
-      <div class="pane r" data-p="1">
+      <div class="pane" data-p="1">
         <span class="kick"><i></i> 01 — El problema</span>
         <h2>¿Plagas? ¿Patógenos? ¿Suelo degradado?</h2>
         <p>En cada ciclo productivo, el cultivo enfrenta presión constante de insectos plaga, fitopatógenos y una progresiva pérdida de fertilidad del suelo.</p>
@@ -893,7 +889,7 @@ code{font-family:var(--f-mono);font-size:.85em;background:var(--bg-2);padding:.1
         <p>El uso prolongado de agroquímicos puede reducir progresivamente la vida microbiana del suelo, afectando su capacidad natural de nutrición y protección del cultivo.</p>
       </div>
 
-      <div class="pane r" data-p="3">
+      <div class="pane" data-p="3">
         <span class="kick"><i></i> 03 — La solución</span>
         <h2>Restauramos el equilibrio biológico del suelo.</h2>
         <p>Microorganismos benéficos que ejercen control biológico sobre plagas y enfermedades, y favorecen la absorción de nutrientes a nivel radicular.</p>
